@@ -98,11 +98,14 @@ void lva::update_lhb(string tag,int data)
 	
 	// lhb full , need to FIFO rep
 	
-	ptr->lhb.erase(ptr->lhb.begin());
-	pair<int,bool> a;
-	a.first=data;
-	a.second=false;
-	ptr->lhb.push_back(a);
+	if(ptr->lhb.size()>0)
+	{
+		ptr->lhb.erase(ptr->lhb.begin());
+		pair<int,bool> a;
+		a.first=data;
+		a.second=false;
+		ptr->lhb.push_back(a);
+	}
 }
 void lva::update_ghb(int data)
 {
@@ -116,12 +119,14 @@ void lva::update_ghb(int data)
 		}
 	}
 	// ghb full , FIFO Rep
-	
-	ghb.erase(ghb.begin());
-	pair<int,bool> a;
-	a.first=data;
-	a.second=false;
-	ghb.push_back(a);
+	if(ghb.size()>0)
+	{
+		ghb.erase(ghb.begin());
+		pair<int,bool> a;
+		a.first=data;
+		a.second=false;
+		ghb.push_back(a);
+	}
 }
 // approx actual value
 bool lva::approx_value(string tag,int& ad,int& av)
@@ -132,37 +137,31 @@ bool lva::approx_value(string tag,int& ad,int& av)
 		approx_table_entry *ptr = lva_table[tag];
 		
 		int val=0;
+		int valid_col=0;
 		for(int i=0;i<ptr->lhb.size();i++)
 		{
+			if(ptr->lhb[i].second==false) valid_col++;
 			val+=ptr->lhb[i].first;
 		}
-		if(ptr->conf_estimate>0)
+		if(ptr->conf_estimate>=0)
 		{
 			// approx value
-			if(ptr->lhb.size()!=0)
-			av=val/ptr->lhb.size();
+			if(valid_col!=0)
+			av=val/valid_col;
 			ptr->approx_degree--;
 			ad=ptr->approx_degree;
 			return true;		
-		}
-		av=0;
-		return false;
-		
+		}	
 		
 	}
 	else
 	{
 		approx_table_entry *ptr = new approx_table_entry(lhb_size,app_d);
 		lva_table.insert(make_pair(tag,ptr));
-		if(ptr->conf_estimate>0)
-		{
-			ad=app_d;
-			av=0;
-			ptr->approx_degree--;
-			return true;
-		}
+		ptr->approx_degree--;
+		ad=ptr->approx_degree;
 	}
-
+	av=0;
 	return false;
 }
 

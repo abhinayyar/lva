@@ -225,6 +225,7 @@ int main(int argv,char *argc[])
 	float cache_hit=0;
 	int approx_degree=INT_MAX;
 	bool approx_miss = false;
+	vector<float> data_err;
 	for(int i=0;i<tracker_obj.inst_tracker.size();i++)
 	{
 	
@@ -244,6 +245,7 @@ int main(int argv,char *argc[])
 			
 			if(cache_obj.search_data(set_id,tag,offset,data_ret,cache_hit)!=HIT)
 			{
+				
 				#ifdef DEBUG
 				cout<<"MISS [TAG] [OFFSET] [SET] "<<"\t"<<tag<<"\t"<<offset<<"\t"<<set_id<<"\n";
 				#endif
@@ -294,10 +296,13 @@ int main(int argv,char *argc[])
 					lva_obj.update_lhb(ap_table_tag,actual_val);
 					lva_obj.update_ghb(actual_val);
 					
+					float err = abs(approx_val-actual_val)/actual_val;
+					data_err.push_back(err);
 					#ifdef VAL_DEBUG
 					cout<<"Approx Value : "<<approx_val<<"\t"<<"Actual Value : "<<actual_val<<"\t"<<"APP TAG "<<ap_table_tag<<endl;
 					#endif
-				}		
+				}
+						
 				
 				
 			}
@@ -344,10 +349,21 @@ int main(int argv,char *argc[])
 			cout<<"ERROR : Invalid set index \n";
 		}			
 	} 
+	// mean error
+	float err=0.0;
+	for(int i=0;i<data_err.size();i++) err+=data_err[i];
+	
+	if(data_err.size()>0)
+	err=err/data_err.size();
+	
 	/* ============== STATS =================== */
 	cout<<" Cache Hit  : "<<cache_obj.cache_hit<<endl;;
 	cout<<" Cache Miss  : "<<cache_obj.cache_miss<<endl;
 	cout<<" Cache Approx Miss  : "<<cache_obj.approx_miss<<endl;
 	cout<<" Cycles APPROX: "<<cache_obj.cycles_approx<<endl;
+	cout<<" Memory Fetch Predict : "<<tracker_obj.mem_fetch_predict<<endl;
+	cout<<" Memory Fetch Approx : "<<tracker_obj.mem_fetch_approx<<endl;
+	cout<<"Geo Mean Error : "<<err<<endl;
+	
 	return 0;
 }

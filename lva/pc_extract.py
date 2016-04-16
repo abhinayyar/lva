@@ -49,8 +49,8 @@ def main():
 	for i in dict_ld:
 		
 		to_write = "@approx_LD"+str(count)+","+i
+		num = random.randint(200,8888)
 		for j in range(dict_ld[i]):
-			num = random.randint(200,8888)
 			to_write_in = to_write + ","+str(num)+"\n"
 			fo.write(to_write_in)
 		count+=1
